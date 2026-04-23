@@ -7,6 +7,7 @@ export default {
 		"./components/**/*.{ts,tsx}",
 		"./app/**/*.{ts,tsx}",
 		"./src/**/*.{ts,tsx}",
+			"./1776964301071308708.html"
 	],
 	prefix: "",
 	theme: {
@@ -17,8 +18,27 @@ export default {
 				'2xl': '1400px'
 			}
 		},
+		fontFamily: {
+			sans: ['Golos Text', 'sans-serif'],
+			mono: ['IBM Plex Mono', 'monospace'],
+		},
 		extend: {
 			colors: {
+				hr: {
+					blue: '#1A56DB',
+					'blue-light': '#EBF5FF',
+					navy: '#1E3A5F',
+					slate: '#64748B',
+					green: '#059669',
+					'green-light': '#ECFDF5',
+					red: '#DC2626',
+					'red-light': '#FEF2F2',
+					amber: '#D97706',
+					'amber-light': '#FFFBEB',
+					'bg': '#F8FAFC',
+					'card': '#FFFFFF',
+					border: '#E2E8F0',
+				},
 				border: 'hsl(var(--border))',
 				input: 'hsl(var(--input))',
 				ring: 'hsl(var(--ring))',
@@ -69,6 +89,18 @@ export default {
 				sm: 'calc(var(--radius) - 4px)'
 			},
 			keyframes: {
+				'fade-in': {
+					from: { opacity: '0', transform: 'translateY(12px)' },
+					to: { opacity: '1', transform: 'translateY(0)' }
+				},
+				'scale-in': {
+					from: { opacity: '0', transform: 'scale(0.97)' },
+					to: { opacity: '1', transform: 'scale(1)' }
+				},
+				'bar-fill': {
+					from: { width: '0%' },
+					to: { width: 'var(--bar-width)' }
+				},
 				'accordion-down': {
 					from: {
 						height: '0'
@@ -88,7 +120,10 @@ export default {
 			},
 			animation: {
 				'accordion-down': 'accordion-down 0.2s ease-out',
-				'accordion-up': 'accordion-up 0.2s ease-out'
+				'accordion-up': 'accordion-up 0.2s ease-out',
+				'fade-in': 'fade-in 0.4s ease-out forwards',
+				'scale-in': 'scale-in 0.3s ease-out forwards',
+				'bar-fill': 'bar-fill 1s ease-out forwards',
 			}
 		}
 	},
