@@ -322,8 +322,17 @@ function DepartmentCard({ dept }: { dept: typeof DEPARTMENTS[0] }) {
   );
 }
 
+const HIRING_FUNNEL = [
+  { month: "Октябрь",  applied: 47, interviewed: 18, offered: 8,  hired: 6  },
+  { month: "Ноябрь",   applied: 52, interviewed: 21, offered: 9,  hired: 8  },
+  { month: "Декабрь",  applied: 31, interviewed: 12, offered: 5,  hired: 4  },
+  { month: "Январь",   applied: 28, interviewed: 10, offered: 4,  hired: 3  },
+  { month: "Февраль",  applied: 61, interviewed: 24, offered: 11, hired: 9  },
+  { month: "Март",     applied: 74, interviewed: 29, offered: 14, hired: 12 },
+];
+
 export default function Index() {
-  const [tab, setTab] = useState<"overview" | "departments">("overview");
+  const [tab, setTab] = useState<"overview" | "departments" | "hiring">("overview");
 
   return (
     <div className="min-h-screen bg-slate-50 font-sans">
@@ -350,10 +359,11 @@ export default function Index() {
             {[
               { key: "overview", label: "Обзор", icon: "LayoutDashboard" },
               { key: "departments", label: "Отделы", icon: "Building2" },
+              { key: "hiring", label: "Динамика найма", icon: "GitMerge" },
             ].map((item) => (
               <button
                 key={item.key}
-                onClick={() => setTab(item.key as "overview" | "departments")}
+                onClick={() => setTab(item.key as "overview" | "departments" | "hiring")}
                 className={`flex items-center gap-1.5 px-4 py-2 rounded-lg text-sm font-medium transition-all duration-150 ${
                   tab === item.key
                     ? "bg-white text-blue-700 shadow-sm"
@@ -567,6 +577,218 @@ export default function Index() {
             </div>
           </div>
         )}
+
+        {tab === "hiring" && (() => {
+          const conversions = HIRING_FUNNEL.map((r) => ({
+            ...r,
+            conversion: parseFloat(((r.hired / r.applied) * 100).toFixed(1)),
+            convInt: parseFloat(((r.interviewed / r.applied) * 100).toFixed(1)),
+            convOffer: parseFloat(((r.offered / r.interviewed) * 100).toFixed(1)),
+            convHire: parseFloat(((r.hired / r.offered) * 100).toFixed(1)),
+          }));
+          const maxConv = Math.max(...conversions.map((r) => r.conversion));
+          const minConv = Math.min(...conversions.map((r) => r.conversion));
+          const totalApplied = conversions.reduce((s, r) => s + r.applied, 0);
+          const totalHired = conversions.reduce((s, r) => s + r.hired, 0);
+          const totalOffered = conversions.reduce((s, r) => s + r.offered, 0);
+          const totalInterviewed = conversions.reduce((s, r) => s + r.interviewed, 0);
+
+          return (
+            <div className="space-y-6">
+              <div style={{ opacity: 0, animation: "fadeInUp 0.3s ease-out forwards" }}>
+                <h1 className="text-2xl font-bold text-slate-900 mb-0.5">Динамика найма</h1>
+                <p className="text-sm text-slate-400">Воронка рекрутинга · октябрь 2024 — март 2025</p>
+              </div>
+
+              <div className="grid grid-cols-2 lg:grid-cols-4 gap-4" style={{ opacity: 0, animation: "fadeInUp 0.4s ease-out 60ms forwards" }}>
+                {[
+                  { icon: "Send", label: "Всего подано заявок", value: totalApplied, color: "#1A56DB", bg: "#EBF5FF" },
+                  { icon: "MessageSquare", label: "Прошли интервью", value: totalInterviewed, color: "#7C3AED", bg: "#F5F3FF" },
+                  { icon: "FileCheck", label: "Получили оффер", value: totalOffered, color: "#D97706", bg: "#FFFBEB" },
+                  { icon: "UserCheck", label: "Вышли на работу", value: totalHired, color: "#059669", bg: "#ECFDF5" },
+                ].map((item) => (
+                  <div key={item.label} className="bg-white rounded-2xl p-5 border border-slate-200 shadow-sm">
+                    <div className="w-9 h-9 rounded-xl flex items-center justify-center mb-3" style={{ backgroundColor: item.bg }}>
+                      <Icon name={item.icon} size={17} style={{ color: item.color }} />
+                    </div>
+                    <div className="text-2xl font-bold text-slate-900 font-mono mb-0.5">{item.value}</div>
+                    <div className="text-xs text-slate-500">{item.label}</div>
+                  </div>
+                ))}
+              </div>
+
+              <div className="bg-white rounded-2xl border border-slate-200 shadow-sm overflow-hidden" style={{ opacity: 0, animation: "fadeInUp 0.4s ease-out 140ms forwards" }}>
+                <div className="px-6 py-4 border-b border-slate-100 flex items-center gap-2">
+                  <Icon name="Table" size={16} className="text-blue-700" />
+                  <span className="font-semibold text-slate-900 text-sm">Воронка по месяцам</span>
+                  <div className="ml-auto flex items-center gap-4 text-[10px] text-slate-400">
+                    <span className="flex items-center gap-1.5"><span className="w-2.5 h-2.5 rounded-sm inline-block bg-emerald-100 border border-emerald-300" />Лучший месяц</span>
+                    <span className="flex items-center gap-1.5"><span className="w-2.5 h-2.5 rounded-sm inline-block bg-red-100 border border-red-300" />Худший месяц</span>
+                  </div>
+                </div>
+
+                <div className="overflow-x-auto">
+                  <table className="w-full text-sm">
+                    <thead>
+                      <tr className="bg-slate-50 border-b border-slate-100">
+                        <th className="text-left px-6 py-3 text-[11px] font-semibold text-slate-400 uppercase tracking-wider">Месяц</th>
+                        <th className="text-right px-4 py-3 text-[11px] font-semibold text-slate-400 uppercase tracking-wider">Подано</th>
+                        <th className="text-right px-4 py-3 text-[11px] font-semibold text-slate-400 uppercase tracking-wider">Интервью</th>
+                        <th className="text-right px-4 py-3 text-[11px] font-semibold text-slate-400 uppercase tracking-wider">Оффер</th>
+                        <th className="text-right px-4 py-3 text-[11px] font-semibold text-slate-400 uppercase tracking-wider">Вышли</th>
+                        <th className="text-right px-6 py-3 text-[11px] font-semibold text-slate-400 uppercase tracking-wider">Конверсия</th>
+                        <th className="px-6 py-3 text-[11px] font-semibold text-slate-400 uppercase tracking-wider w-36">Воронка</th>
+                      </tr>
+                    </thead>
+                    <tbody>
+                      {conversions.map((row, i) => {
+                        const isBest = row.conversion === maxConv;
+                        const isWorst = row.conversion === minConv;
+                        return (
+                          <tr
+                            key={row.month}
+                            className="border-b border-slate-50 last:border-0 transition-colors hover:bg-slate-50/70"
+                            style={{
+                              backgroundColor: isBest ? "#F0FDF4" : isWorst ? "#FEF2F2" : undefined,
+                              opacity: 0,
+                              animation: `fadeInUp 0.35s ease-out ${i * 55}ms forwards`,
+                            }}
+                          >
+                            <td className="px-6 py-4">
+                              <div className="flex items-center gap-2">
+                                <span className="font-medium text-slate-800">{row.month}</span>
+                                {isBest && <span className="text-[10px] font-semibold text-emerald-700 bg-emerald-100 px-1.5 py-0.5 rounded-full">лучший</span>}
+                                {isWorst && <span className="text-[10px] font-semibold text-red-600 bg-red-100 px-1.5 py-0.5 rounded-full">худший</span>}
+                              </div>
+                            </td>
+                            <td className="px-4 py-4 text-right font-mono text-slate-700 font-medium">{row.applied}</td>
+                            <td className="px-4 py-4 text-right">
+                              <span className="font-mono text-slate-700">{row.interviewed}</span>
+                              <span className="text-[10px] text-slate-400 ml-1">{row.convInt}%</span>
+                            </td>
+                            <td className="px-4 py-4 text-right">
+                              <span className="font-mono text-slate-700">{row.offered}</span>
+                              <span className="text-[10px] text-slate-400 ml-1">{row.convOffer}%</span>
+                            </td>
+                            <td className="px-4 py-4 text-right">
+                              <span className="font-mono text-slate-700 font-semibold">{row.hired}</span>
+                              <span className="text-[10px] text-slate-400 ml-1">{row.convHire}%</span>
+                            </td>
+                            <td className="px-6 py-4 text-right">
+                              <span
+                                className="text-sm font-bold font-mono px-2.5 py-1 rounded-lg"
+                                style={{
+                                  color: isBest ? "#059669" : isWorst ? "#DC2626" : "#1A56DB",
+                                  backgroundColor: isBest ? "#ECFDF5" : isWorst ? "#FEF2F2" : "#EBF5FF",
+                                }}
+                              >
+                                {row.conversion}%
+                              </span>
+                            </td>
+                            <td className="px-6 py-4">
+                              <div className="flex items-center gap-0.5">
+                                {[
+                                  { v: row.applied, c: "#1A56DB" },
+                                  { v: row.interviewed, c: "#7C3AED" },
+                                  { v: row.offered, c: "#D97706" },
+                                  { v: row.hired, c: "#059669" },
+                                ].map((seg, si) => (
+                                  <div
+                                    key={si}
+                                    className="h-4 rounded-sm"
+                                    style={{
+                                      width: `${(seg.v / row.applied) * 88}px`,
+                                      backgroundColor: seg.c,
+                                      opacity: 0.75,
+                                    }}
+                                  />
+                                ))}
+                              </div>
+                            </td>
+                          </tr>
+                        );
+                      })}
+                    </tbody>
+                    <tfoot>
+                      <tr className="bg-slate-50 border-t-2 border-slate-200">
+                        <td className="px-6 py-3 text-xs font-semibold text-slate-500 uppercase tracking-wide">Итого / среднее</td>
+                        <td className="px-4 py-3 text-right font-mono font-bold text-slate-900">{totalApplied}</td>
+                        <td className="px-4 py-3 text-right font-mono font-bold text-slate-900">{totalInterviewed}</td>
+                        <td className="px-4 py-3 text-right font-mono font-bold text-slate-900">{totalOffered}</td>
+                        <td className="px-4 py-3 text-right font-mono font-bold text-slate-900">{totalHired}</td>
+                        <td className="px-6 py-3 text-right">
+                          <span className="text-sm font-bold font-mono text-blue-700 bg-blue-50 px-2.5 py-1 rounded-lg">
+                            {((totalHired / totalApplied) * 100).toFixed(1)}%
+                          </span>
+                        </td>
+                        <td className="px-6 py-3" />
+                      </tr>
+                    </tfoot>
+                  </table>
+                </div>
+              </div>
+
+              <div className="grid grid-cols-1 lg:grid-cols-3 gap-4" style={{ opacity: 0, animation: "fadeInUp 0.4s ease-out 400ms forwards" }}>
+                <div className="bg-white rounded-2xl p-5 border border-slate-200 shadow-sm">
+                  <div className="flex items-center gap-2 mb-4">
+                    <Icon name="TrendingUp" size={15} className="text-blue-700" />
+                    <span className="text-sm font-semibold text-slate-800">Подача заявок</span>
+                  </div>
+                  <div className="flex items-end gap-1.5 h-20">
+                    {conversions.map((r) => (
+                      <div key={r.month} className="flex-1 flex flex-col items-center gap-1">
+                        <span className="text-[9px] font-mono text-slate-500">{r.applied}</span>
+                        <div className="w-full rounded-t-sm" style={{ height: `${(r.applied / 74) * 52}px`, backgroundColor: "#1A56DB", opacity: 0.75 }} />
+                        <span className="text-[9px] text-slate-400">{r.month.slice(0, 3)}</span>
+                      </div>
+                    ))}
+                  </div>
+                </div>
+                <div className="bg-white rounded-2xl p-5 border border-slate-200 shadow-sm">
+                  <div className="flex items-center gap-2 mb-4">
+                    <Icon name="UserCheck" size={15} className="text-emerald-600" />
+                    <span className="text-sm font-semibold text-slate-800">Выход на работу</span>
+                  </div>
+                  <div className="flex items-end gap-1.5 h-20">
+                    {conversions.map((r) => (
+                      <div key={r.month} className="flex-1 flex flex-col items-center gap-1">
+                        <span className="text-[9px] font-mono text-slate-500">{r.hired}</span>
+                        <div className="w-full rounded-t-sm" style={{ height: `${(r.hired / 12) * 52}px`, backgroundColor: "#059669", opacity: 0.75 }} />
+                        <span className="text-[9px] text-slate-400">{r.month.slice(0, 3)}</span>
+                      </div>
+                    ))}
+                  </div>
+                </div>
+                <div className="bg-white rounded-2xl p-5 border border-slate-200 shadow-sm">
+                  <div className="flex items-center gap-2 mb-4">
+                    <Icon name="Percent" size={15} className="text-purple-600" />
+                    <span className="text-sm font-semibold text-slate-800">Конверсия заявка→выход</span>
+                  </div>
+                  <div className="flex items-end gap-1.5 h-20">
+                    {conversions.map((r) => {
+                      const isBest = r.conversion === maxConv;
+                      const isWorst = r.conversion === minConv;
+                      return (
+                        <div key={r.month} className="flex-1 flex flex-col items-center gap-1">
+                          <span className="text-[9px] font-mono font-semibold" style={{ color: isBest ? "#059669" : isWorst ? "#DC2626" : "#475569" }}>{r.conversion}%</span>
+                          <div
+                            className="w-full rounded-t-sm"
+                            style={{
+                              height: `${(r.conversion / maxConv) * 52}px`,
+                              backgroundColor: isBest ? "#059669" : isWorst ? "#DC2626" : "#7C3AED",
+                              opacity: 0.75,
+                            }}
+                          />
+                          <span className="text-[9px] text-slate-400">{r.month.slice(0, 3)}</span>
+                        </div>
+                      );
+                    })}
+                  </div>
+                </div>
+              </div>
+            </div>
+          );
+        })()}
 
         {tab === "departments" && (
           <div className="space-y-6">
